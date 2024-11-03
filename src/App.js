@@ -13,10 +13,10 @@ function App() {
   const [isPaused, setIsPaused] = useState(true); // Add isPaused state
 
   return (
-    <main style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      <div style={{ height: "50%", width: "100%" }}>
+    <main>
+      <div style={{ height: "50%", width: "100vw" }}>
         <AdventureMap />
-      </div>
+      </div> 
       <div style={{ height: "50%" }}>
         <SettingsContext.Provider
           value={{

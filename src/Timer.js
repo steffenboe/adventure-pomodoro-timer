@@ -1,24 +1,24 @@
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar"
-import "react-circular-progressbar/dist/styles.css"
-import { useContext, useState, useEffect, useRef } from "react"
-import SettingsContext from "./SettingsContext"
-import AdventureMap from "./AdventureMap"
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import { useContext, useState, useEffect, useRef } from "react";
+import SettingsContext from "./SettingsContext";
+import AdventureMap from "./AdventureMap";
 
-const red = "#f54e4e"
-const green = "#4aec8c"
+const red = "#f54e4e";
+const green = "#4aec8c";
 
 function Timer() {
-  const settingsInfo = useContext(SettingsContext)
+  const settingsInfo = useContext(SettingsContext);
 
-  const [isPaused, setIsPaused] = useState(true)
-  const [mode, setMode] = useState('work')
-  const [secondsLeft, setSecondsLeft] = useState(0)
-  const secondsLeftRef = useRef(secondsLeft)
-  const isPausedRef = useRef(isPaused)
-  const modeRef = useRef(mode)
+  const [isPaused, setIsPaused] = useState(true);
+  const [mode, setMode] = useState("work");
+  const [secondsLeft, setSecondsLeft] = useState(0);
+  const secondsLeftRef = useRef(secondsLeft);
+  const isPausedRef = useRef(isPaused);
+  const modeRef = useRef(mode);
 
   function initTimer() {
-    setSecondsLeft(settingsInfo.workMinutes * 60)
+    setSecondsLeft(settingsInfo.workMinutes * 60);
     secondsLeftRef.current = settingsInfo.workMinutes * 60;
   }
 
@@ -28,10 +28,12 @@ function Timer() {
   }
 
   useEffect(() => {
-
     function switchMode() {
-      const nextMode = modeRef.current === 'work' ? 'break' : 'work';
-      const nextSeconds = (nextMode === 'work' ? settingsInfo.workMinutes : settingsInfo.breakMinutes) * 60;
+      const nextMode = modeRef.current === "work" ? "break" : "work";
+      const nextSeconds =
+        (nextMode === "work"
+          ? settingsInfo.workMinutes
+          : settingsInfo.breakMinutes) * 60;
 
       setMode(nextMode);
       modeRef.current = nextMode;
@@ -40,7 +42,7 @@ function Timer() {
       secondsLeftRef.current = nextSeconds;
     }
 
-    initTimer()
+    initTimer();
     const interval = setInterval(() => {
       if (isPausedRef.current) {
         return;
@@ -50,56 +52,78 @@ function Timer() {
       }
 
       tick();
-    },1000)
-    return () => clearInterval(interval)
+    }, 1000);
+    return () => clearInterval(interval);
   }, [settingsInfo]);
 
   const handleStart = () => {
     setIsPaused(false);
     isPausedRef.current = false;
-    const event = new CustomEvent('timerStart');
+    const event = new CustomEvent("timerStart");
     window.dispatchEvent(event);
   };
 
-  const playButton = <button onClick={handleStart}>
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="size-6"
-    >
-      <path
-        fillRule="evenodd"
-        d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
-        clipRule="evenodd" />
-    </svg>
-  </button>;
-  const pauseButton = <button onClick={() => {setIsPaused(true); isPausedRef.current = true}}>
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className="size-6"
-    >
-      <path
-        fillRule="evenodd"
-        d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z"
-        clipRule="evenodd" />
-    </svg>
-  </button>;
+  const handlePause = () => {
+    setIsPaused(true);
+    isPausedRef.current = true;
+    const event = new CustomEvent("timerPause");
+    window.dispatchEvent(event);
+  };
 
-  const totalSeconds = mode === 'work'  
-    ? settingsInfo.workMinutes * 60 
-    : settingsInfo.breakMinutes * 60
-  const percentage = Math.round(secondsLeft / totalSeconds * 100)
+
+  const playButton = (
+    <button onClick={handleStart}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className="size-6"
+      >
+        <path
+          fillRule="evenodd"
+          d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+          clipRule="evenodd"
+        />
+      </svg>
+    </button>
+  );
+  const pauseButton = (
+    <button
+      onClick={handlePause}>
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className="size-6"
+      >
+        <path
+          fillRule="evenodd"
+          d="M6.75 5.25a.75.75 0 0 1 .75-.75H9a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H7.5a.75.75 0 0 1-.75-.75V5.25Zm7.5 0A.75.75 0 0 1 15 4.5h1.5a.75.75 0 0 1 .75.75v13.5a.75.75 0 0 1-.75.75H15a.75.75 0 0 1-.75-.75V5.25Z"
+          clipRule="evenodd"
+        />
+      </svg>
+    </button>
+  );
+
+  const totalSeconds =
+    mode === "work"
+      ? settingsInfo.workMinutes * 60
+      : settingsInfo.breakMinutes * 60;
+  const percentage = Math.round((secondsLeft / totalSeconds) * 100);
 
   const minutes = Math.floor(secondsLeft / 60);
   let seconds = secondsLeft % 60;
-  if(seconds < 10) seconds = '0' + seconds
-    
+  if (seconds < 10) seconds = "0" + seconds;
 
   return (
-    <div>
+    <div
+      style={{
+        maxWidth: "340px",
+        paddingTop: "50px",
+        margin: "0 auto",
+        textAlign: "center",
+      }}
+    >
       <CircularProgressbar
         value={percentage}
         size={200}
@@ -107,7 +131,7 @@ function Timer() {
         radius={20}
         text={minutes + ":" + seconds}
         styles={buildStyles({
-          pathColor: mode === 'work' ? green : red,
+          pathColor: mode === "work" ? green : red,
           textColor: "#fff",
           trailColor: "rgba(255, 255, 255, 0.2)",
         })}
