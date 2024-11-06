@@ -2,9 +2,8 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { useContext, useState, useEffect, useRef } from "react";
 import SettingsContext from "./SettingsContext";
-import AdventureMap from "./AdventureMap";
 
-const red = "#f54e4e";
+const red = "#9E8C98";
 const green = "#4aec8c";
 
 function Timer() {
@@ -16,10 +15,13 @@ function Timer() {
   const secondsLeftRef = useRef(secondsLeft);
   const isPausedRef = useRef(isPaused);
   const modeRef = useRef(mode);
+  const [sessionCount, setSessionCount] = useState(0);
+  const sessionCountRef = useRef(sessionCount);
 
   function initTimer() {
     setSecondsLeft(settingsInfo.workMinutes * 60);
     secondsLeftRef.current = settingsInfo.workMinutes * 60;
+    sessionCountRef.current = 1;
   }
 
   function tick() {
@@ -29,17 +31,41 @@ function Timer() {
 
   useEffect(() => {
     function switchMode() {
-      const nextMode = modeRef.current === "work" ? "break" : "work";
-      const nextSeconds =
-        (nextMode === "work"
-          ? settingsInfo.workMinutes
-          : settingsInfo.breakMinutes) * 60;
+      const nextMode = getNextMode();
+      const nextSeconds = getNextSeconds();
 
       setMode(nextMode);
+      if (nextMode == "work") {
+        sessionCountRef.current++;
+        setSessionCount(sessionCountRef.current);
+        console.log(sessionCountRef.current);
+      }
       modeRef.current = nextMode;
 
       setSecondsLeft(nextSeconds);
       secondsLeftRef.current = nextSeconds;
+
+      function getNextSeconds() {
+        if (nextMode === "longBreak") {
+          sessionCountRef.current = 0;
+          setSessionCount(0);
+          return settingsInfo.longBreakMinutes * 60;
+        }
+        return (
+          (nextMode === "work"
+            ? settingsInfo.workMinutes
+            : settingsInfo.breakMinutes) * 60
+        );
+      }
+
+      function getNextMode() {
+        if (modeRef.current === "work" && sessionCountRef.current == 4) {
+          sessionCountRef.current = 1;
+          setSessionCount(1);
+          return "longBreak";
+        }
+        return modeRef.current === "work" ? "break" : "work";
+      }
     }
 
     initTimer();
@@ -70,7 +96,6 @@ function Timer() {
     window.dispatchEvent(event);
   };
 
-
   const playButton = (
     <button onClick={handleStart}>
       <svg
@@ -88,8 +113,7 @@ function Timer() {
     </button>
   );
   const pauseButton = (
-    <button
-      onClick={handlePause}>
+    <button onClick={handlePause}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
@@ -106,14 +130,36 @@ function Timer() {
   );
 
   const totalSeconds =
-    mode === "work"
-      ? settingsInfo.workMinutes * 60
-      : settingsInfo.breakMinutes * 60;
+      mode === "longBreak"
+        ? settingsInfo.longBreakMinutes * 60
+        : mode === "work"
+        ? settingsInfo.workMinutes * 60
+        : settingsInfo.breakMinutes * 60;
   const percentage = Math.round((secondsLeft / totalSeconds) * 100);
 
   const minutes = Math.floor(secondsLeft / 60);
   let seconds = secondsLeft % 60;
   if (seconds < 10) seconds = "0" + seconds;
+
+  const renderSessionCircles = () => {
+    const circles = [];
+    for (let i = 0; i < 4; i++) {
+      circles.push(
+        <div
+          key={i}
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            backgroundColor: i < sessionCountRef.current ? red : "lightgray", // Green if i < sessionCount
+            margin: "2px",
+            display: "inline-block",
+          }}
+        />
+      );
+    }
+    return circles;
+  };
 
   return (
     <div
@@ -124,6 +170,9 @@ function Timer() {
         textAlign: "center",
       }}
     >
+       <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+        {renderSessionCircles()}
+      </div>
       <CircularProgressbar
         value={percentage}
         size={200}
@@ -131,7 +180,7 @@ function Timer() {
         radius={20}
         text={minutes + ":" + seconds}
         styles={buildStyles({
-          pathColor: mode === "work" ? green : red,
+          pathColor: mode === "work" ? red : green,
           textColor: "#fff",
           trailColor: "rgba(255, 255, 255, 0.2)",
         })}

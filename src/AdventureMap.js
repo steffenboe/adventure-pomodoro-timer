@@ -1,10 +1,14 @@
 import { motion, useMotionValue, useAnimationControls } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useContext, useRef, useState } from "react";
 import backgroundImage from "./assets/images/mountains.jpg"; // Import your background image
+import SettingsContext from "./SettingsContext";
+
 
 function AdventureMap() {
 
-  const transition = { duration: 15, ease: "linear" };
+  const settingsInfo = useContext(SettingsContext);
+
+  const transition = { duration: (settingsInfo.workMinutes * 60) / 4, ease: "linear" };
   const straightPath = "M100,320 L460,320";
 
   const animationControls = useAnimationControls();
@@ -36,7 +40,7 @@ function AdventureMap() {
     <div>
       <motion.div
         animate={svgContainerControls}
-        transition={{ duration: 100, ease: "linear" }}
+        transition={{ duration: (settingsInfo.workMinutes * 60) / 4, ease: "linear" }}
         style={{
           width: "100%",
           height: "300px",

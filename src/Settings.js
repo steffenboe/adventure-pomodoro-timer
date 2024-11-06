@@ -28,6 +28,16 @@ function Settings() {
         max={15}
         onChange={(newValue) => settingsInfo.setBreakMinutes(newValue)}
       />
+      <label>long break minutes: {settingsInfo.longBreakMinutes}:00</label>
+      <ReactSlider
+        className={"slider green"}
+        thumbClassName={"thumb"}
+        trackClassName={"track"}
+        value={settingsInfo.longBreakMinutes}
+        min={1}
+        max={15}
+        onChange={(newValue) => settingsInfo.setLongBreakMinutes(newValue)}
+      />
       <div style={{textAlign: 'center', marginTop: '20px'}}>
         <button className="with-text" onClick={ () => settingsInfo.setShowSettings(false)}>
           <svg

@@ -14,9 +14,6 @@ function App() {
 
   return (
     <main>
-      <div style={{ height: "50%", width: "100vw" }}>
-        <AdventureMap />
-      </div> 
       <div style={{ height: "50%" }}>
         <SettingsContext.Provider
           value={{
@@ -30,6 +27,7 @@ function App() {
             setLongBreakMinutes,
           }}
         >
+          <AdventureMap />
           {showSettings ? <Settings /> : <Timer />}
         </SettingsContext.Provider>
       </div>
