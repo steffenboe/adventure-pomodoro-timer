@@ -2,13 +2,16 @@ import { motion, useMotionValue, useAnimationControls } from "framer-motion";
 import { useEffect, useContext, useRef, useState } from "react";
 import backgroundImage from "./assets/images/mountains.jpg"; // Import your background image
 import SettingsContext from "./SettingsContext";
-
+import lottieFile from "./assets/images/bus.json";
+import Lottie from "lottie-react";
 
 function AdventureMap() {
-
   const settingsInfo = useContext(SettingsContext);
 
-  const transition = { duration: (settingsInfo.workMinutes * 60) / 4, ease: "linear" };
+  const transition = {
+    duration: (settingsInfo.workMinutes * 60) / 4,
+    ease: "linear",
+  };
   const straightPath = "M100,320 L460,320";
 
   const animationControls = useAnimationControls();
@@ -40,7 +43,10 @@ function AdventureMap() {
     <div>
       <motion.div
         animate={svgContainerControls}
-        transition={{ duration: (settingsInfo.workMinutes * 60) / 4, ease: "linear" }}
+        transition={{
+          duration: (settingsInfo.workMinutes * 60) / 4,
+          ease: "linear",
+        }}
         style={{
           width: "100%",
           height: "300px",
@@ -49,10 +55,24 @@ function AdventureMap() {
           backgroundSize: "cover",
           backgroundPosition: "bottom", // Align to bottom
         }}
-      >
-        
-      </motion.div>
+      ></motion.div>
       <motion.div
+        animate={animationControls}
+        transition={transition}
+        style={{
+          width: "160px",
+          height: "160px",
+          borderRadius: "10px",
+          position: "relative",
+          left: -50,
+          transform: "translateY(-350px)", // Adjust vertical offset here
+          offsetPath: `path('${straightPath}')`,
+        }}
+      >
+        <Lottie animationData={lottieFile} />
+      </motion.div>
+
+      {/* <motion.div
           animate={animationControls}
           transition={transition}
           style={{
@@ -66,7 +86,7 @@ function AdventureMap() {
             transform: "translateY(-150px)", // Adjust vertical offset here
             offsetPath: `path('${straightPath}')`,
           }}
-        />
+        /> */}
     </div>
   );
 }
