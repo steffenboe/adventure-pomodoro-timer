@@ -9,10 +9,11 @@ function AdventureMap() {
   const settingsInfo = useContext(SettingsContext);
 
   const transition = {
-    duration: (settingsInfo.workMinutes * 60) / 4,
+    // duration: (settingsInfo.workMinutes * 60) / 4,
+    duration: 20,
     ease: "linear",
   };
-  const straightPath = "M100,320 L460,320";
+  const straightPath = "M100,600 L400,500 L220,310 L400,230 L120,130";
 
   const animationControls = useAnimationControls();
   const svgContainerControls = useAnimationControls();
@@ -29,6 +30,10 @@ function AdventureMap() {
       svgContainerControls.stop();
     };
 
+    const handleTimePass = (event) => {
+      console.log("Seconds left from event:", event.detail.secondsLeft); // Access data from event.detail
+    }
+
     // Add event listeners for timerStart and timerPause
     window.addEventListener("timerStart", handleTimerStart);
     window.addEventListener("timerPause", handleTimerPause); // Add this line
@@ -41,7 +46,7 @@ function AdventureMap() {
 
   return (
     <div>
-      <motion.div
+      {/* <motion.div
         animate={svgContainerControls}
         transition={{
           duration: (settingsInfo.workMinutes * 60) / 4,
@@ -55,38 +60,40 @@ function AdventureMap() {
           backgroundSize: "cover",
           backgroundPosition: "bottom", // Align to bottom
         }}
-      ></motion.div>
-      <motion.div
+      ></motion.div> */}
+      <svg width="100%" height="700px" style={{ position: "absolute", top: 0, left: -50, zIndex: 0, pointerEvents: 'none' }}> {/* pointerEvents makes it non-interactive */}
+        <path d={straightPath} stroke="white" strokeWidth="2" fill="none" />
+      </svg>
+      {/* <motion.div
         animate={animationControls}
         transition={transition}
         style={{
           width: "160px",
           height: "160px",
           borderRadius: "10px",
-          position: "relative",
+          position: "absolute",
+          top: 0,
           left: -50,
-          transform: "translateY(-350px)", // Adjust vertical offset here
           offsetPath: `path('${straightPath}')`,
         }}
       >
-        <Lottie animationData={lottieFile} />
-      </motion.div>
+        <Lottie animationData={lottieFile} /> 
+      </motion.div>  */}
 
-      {/* <motion.div
+      <motion.div
           animate={animationControls}
           transition={transition}
           style={{
             width: "20px",
             height: "20px",
             borderRadius: "10px",
-            position: "relative",
+            position: "absolute",
             background: "white",
-            top: -200,
+            top: 0,
             left: -50,
-            transform: "translateY(-150px)", // Adjust vertical offset here
             offsetPath: `path('${straightPath}')`,
           }}
-        /> */}
+        />
     </div>
   );
 }

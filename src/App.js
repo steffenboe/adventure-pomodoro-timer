@@ -4,6 +4,8 @@ import Settings from "./Settings";
 import SettingsContext from "./SettingsContext";
 import Timer from "./Timer";
 import { useState } from "react";
+import backgroundImage from "./assets/images/forestmountains.jpg";
+
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -14,7 +16,18 @@ function App() {
 
   return (
     <main>
-      <div style={{ height: "50%" }}>
+      <div style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          height: "100vh",
+          width: "100vw",
+          position: "absolute",
+          top: 0,
+          left: 0,
+          zIndex: -1,
+        }}
+>
         <SettingsContext.Provider
           value={{
             showSettings,
@@ -27,7 +40,7 @@ function App() {
             setLongBreakMinutes,
           }}
         >
-          <AdventureMap />
+          <AdventureMap /> 
           {showSettings ? <Settings /> : <Timer />}
         </SettingsContext.Provider>
       </div>
