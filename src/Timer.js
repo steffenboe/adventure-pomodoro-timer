@@ -163,9 +163,10 @@ function Timer() {
   return (
     <div
       style={{
-        maxWidth: "120px",
-        paddingTop: "250px",
-        paddingLeft: "50px",
+        position: "fixed",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)", // Adjust for element's size
         margin: "0 auto",
         textAlign: "center",
       }}

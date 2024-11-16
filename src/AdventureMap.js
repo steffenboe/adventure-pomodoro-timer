@@ -1,38 +1,36 @@
 import { motion, useMotionValue, useAnimationControls } from "framer-motion";
 import { useEffect, useContext, useRef, useState } from "react";
 import backgroundImage from "./assets/images/mountains.jpg"; // Import your background image
-import SettingsContext from "./SettingsContext";
 import lottieFile from "./assets/images/bus.json";
 import Lottie from "lottie-react";
 
 function AdventureMap() {
-  const settingsInfo = useContext(SettingsContext);
+  const adventureDuration = 1 * 60;
 
-  const transition = {
-    // duration: (settingsInfo.workMinutes * 60) / 4,
-    duration: 20,
+  const [progress, setProgress] = useState(0);
+  const progressRef = useRef(0);
+
+  const [totalAnimationDuration] = useState(adventureDuration);
+  let remainingAnimationTime = 0;
+
+  let transition = {
     ease: "linear",
   };
+
   const straightPath = "M100,600 L400,500 L220,310 L400,230 L120,130";
 
   const animationControls = useAnimationControls();
-  const svgContainerControls = useAnimationControls();
 
   useEffect(() => {
     const handleTimerStart = () => {
-      svgContainerControls.start({ x: "-700px" }); // Adjust scroll distance
+      remainingAnimationTime = totalAnimationDuration * (1 - progressRef.current);
       animationControls.stop();
-      animationControls.start({ offsetDistance: "100%" });
+      animationControls.start({ offsetDistance: "100%", transition: { ease: "linear", duration: remainingAnimationTime } });
     };
 
     const handleTimerPause = () => {
       animationControls.stop();
-      svgContainerControls.stop();
     };
-
-    const handleTimePass = (event) => {
-      console.log("Seconds left from event:", event.detail.secondsLeft); // Access data from event.detail
-    }
 
     // Add event listeners for timerStart and timerPause
     window.addEventListener("timerStart", handleTimerStart);
@@ -61,8 +59,8 @@ function AdventureMap() {
           backgroundPosition: "bottom", // Align to bottom
         }}
       ></motion.div> */}
-      <svg width="100%" height="700px" style={{ position: "absolute", top: 0, left: -50, zIndex: 0, pointerEvents: 'none' }}> {/* pointerEvents makes it non-interactive */}
-        <path d={straightPath} stroke="white" strokeWidth="2" fill="none" />
+      <svg width="100%" height="100vh" style={{ position: "fixed", top: 0, left: -50, zIndex: 0, pointerEvents: 'none' }}> {/* pointerEvents makes it non-interactive */}
+        <path d={straightPath} stroke="lightgray" strokeWidth="2" fill="none" />
       </svg>
       {/* <motion.div
         animate={animationControls}
@@ -83,12 +81,18 @@ function AdventureMap() {
       <motion.div
           animate={animationControls}
           transition={transition}
+          onUpdate={(latest) => {
+            const currentProgress = (parseFloat(latest.offsetDistance.replace('%', '')) / 100);
+            progressRef.current = currentProgress; // Update ref value
+            setProgress(currentProgress);
+          }}
           style={{
             width: "20px",
             height: "20px",
             borderRadius: "10px",
             position: "absolute",
             background: "white",
+            zIndex: 0,
             top: 0,
             left: -50,
             offsetPath: `path('${straightPath}')`,

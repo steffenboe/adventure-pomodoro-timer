@@ -20,12 +20,12 @@ function App() {
           backgroundImage: `url(${backgroundImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          height: "100vh",
-          width: "100vw",
-          position: "absolute",
+          overflow: "hidden",  // Prevent content from overflowing
+          width: "100vw",         // Fill parent width
+          height: "100vh",        // Fill parent height
+          position: "absolute", 
           top: 0,
-          left: 0,
-          zIndex: -1,
+          zIndex: 1,            // Ensure it's behind the timer
         }}
 >
         <SettingsContext.Provider
