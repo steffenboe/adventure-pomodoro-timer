@@ -5,7 +5,7 @@ import lottieFile from "./assets/images/bus.json";
 import Lottie from "lottie-react";
 
 function AdventureMap() {
-  const adventureDuration = 1 * 60;
+  const adventureDuration = 10;
 
   const [progress, setProgress] = useState(0);
   const progressRef = useRef(0);
@@ -23,16 +23,19 @@ function AdventureMap() {
 
   useEffect(() => {
     const handleTimerStart = () => {
-      remainingAnimationTime = totalAnimationDuration * (1 - progressRef.current);
+      remainingAnimationTime =
+        totalAnimationDuration * (1 - progressRef.current);
       animationControls.stop();
-      animationControls.start({ offsetDistance: "100%", transition: { ease: "linear", duration: remainingAnimationTime } });
+      animationControls.start({
+        offsetDistance: "100%",
+        transition: { ease: "linear", duration: remainingAnimationTime },
+      });
     };
 
     const handleTimerPause = () => {
       animationControls.stop();
     };
 
-    // Add event listeners for timerStart and timerPause
     window.addEventListener("timerStart", handleTimerStart);
     window.addEventListener("timerPause", handleTimerPause); // Add this line
 
@@ -44,60 +47,48 @@ function AdventureMap() {
 
   return (
     <div>
-      {/* <motion.div
-        animate={svgContainerControls}
-        transition={{
-          duration: (settingsInfo.workMinutes * 60) / 4,
-          ease: "linear",
-        }}
+      <svg
+        width="100%"
+        height="100vh"
         style={{
-          width: "100%",
-          height: "300px",
-          overflow: "hidden",
-          backgroundImage: `url(${backgroundImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "bottom", // Align to bottom
+          position: "fixed",
+          top: 0,
+          left: -50,
+          zIndex: 0,
+          pointerEvents: "none",
         }}
-      ></motion.div> */}
-      <svg width="100%" height="100vh" style={{ position: "fixed", top: 0, left: -50, zIndex: 0, pointerEvents: 'none' }}> {/* pointerEvents makes it non-interactive */}
+      >
         <path d={straightPath} stroke="lightgray" strokeWidth="2" fill="none" />
       </svg>
-      {/* <motion.div
+      <motion.div
         animate={animationControls}
         transition={transition}
+        onUpdate={(latest) => {
+          const currentProgress =
+            parseFloat(latest.offsetDistance.replace("%", "")) / 100;
+          progressRef.current = currentProgress; // Update ref value
+          setProgress(currentProgress);
+
+          if (progressRef.current >= 1) {
+            const adventureCompletedEvent = new CustomEvent(
+              "adventureCompleted",
+              { detail: { amount: 20 } }
+            );
+            window.dispatchEvent(adventureCompletedEvent);
+          }
+        }}
         style={{
-          width: "160px",
-          height: "160px",
+          width: "20px",
+          height: "20px",
           borderRadius: "10px",
           position: "absolute",
+          background: "white",
+          zIndex: 0,
           top: 0,
           left: -50,
           offsetPath: `path('${straightPath}')`,
         }}
-      >
-        <Lottie animationData={lottieFile} /> 
-      </motion.div>  */}
-
-      <motion.div
-          animate={animationControls}
-          transition={transition}
-          onUpdate={(latest) => {
-            const currentProgress = (parseFloat(latest.offsetDistance.replace('%', '')) / 100);
-            progressRef.current = currentProgress; // Update ref value
-            setProgress(currentProgress);
-          }}
-          style={{
-            width: "20px",
-            height: "20px",
-            borderRadius: "10px",
-            position: "absolute",
-            background: "white",
-            zIndex: 0,
-            top: 0,
-            left: -50,
-            offsetPath: `path('${straightPath}')`,
-          }}
-        />
+      />
     </div>
   );
 }
