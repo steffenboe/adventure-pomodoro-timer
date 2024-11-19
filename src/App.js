@@ -5,7 +5,8 @@ import SettingsContext from "./SettingsContext";
 import Timer from "./Timer";
 import { useState, useEffect, useRef } from "react";
 import backgroundImage from "./assets/images/forestmountains.jpg";
-import Lottie from "lottie-react";
+import coinsImage from './assets/images/coins.png'; 
+import Modal from './Modal';
 
 
 function App() {
@@ -13,14 +14,18 @@ function App() {
   const [workMinutes, setWorkMinutes] = useState(25);
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [longBreakMinutes, setLongBreakMinutes] = useState(15);
-  const [isPaused, setIsPaused] = useState(true); // Add isPaused state
 
   const [playerGold, setPlayerGold] = useState(0);
-  const lottiefileRef = useRef(null);
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalGoldAmount, setModalGoldAmount] = useState(0);
+
 
   useEffect(() => {
     const handleAdventureComplete = (event) => {
       setPlayerGold((prevGold) => prevGold + event.detail.amount);
+      setModalGoldAmount(event.detail.amount)
+      setShowModal(true);
     };
   
     window.addEventListener("adventureCompleted", handleAdventureComplete);
@@ -34,14 +39,22 @@ function App() {
     <main>
       <div style={{
         position: "absolute",
-        top: -70,
-        left: -30,
+        alignItems: "center",
+        display: "flex",
+        right: "20px",
+        top: "10px",
         zIndex: 10,
-        fontSize: "20px",
+        fontSize: "30px",
       }}>
-        <Lottie ref={lottiefileRef} animationData={require("./assets/lottie/coins.json")} style={{ width: "150px", height: "150px" }} loop={false} /> 
+        <img style={{width: "60px", height: "60px"}} src={coinsImage} alt="Coins" />
         {playerGold}        
       </div>
+
+      {showModal && (
+        <Modal onClose={() => setShowModal(false)}>
+          Congratulations! You earned {modalGoldAmount} gold!
+        </Modal>
+      )}
 
       <div style={{
           backgroundImage: `url(${backgroundImage})`,

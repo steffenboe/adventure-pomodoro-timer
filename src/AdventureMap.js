@@ -1,11 +1,8 @@
-import { motion, useMotionValue, useAnimationControls } from "framer-motion";
-import { useEffect, useContext, useRef, useState } from "react";
-import backgroundImage from "./assets/images/mountains.jpg"; // Import your background image
-import lottieFile from "./assets/images/bus.json";
-import Lottie from "lottie-react";
+import { motion, useAnimationControls } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 
 function AdventureMap() {
-  const adventureDuration = 10;
+  const adventureDuration = 60 * 60;
 
   const [progress, setProgress] = useState(0);
   const progressRef = useRef(0);

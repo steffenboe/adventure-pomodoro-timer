@@ -30,6 +30,15 @@ function useTimer(workMinutes, breakMinutes, longBreakMinutes) {
       if (nextMode === "work") {
         sessionCountRef.current = sessionCountRef.current + 1;
         setSessionCount(sessionCountRef.current);
+        window.dispatchEvent(new CustomEvent("timerStart"));
+      }
+
+      if (nextMode === "break"){
+        window.dispatchEvent(new CustomEvent("timerPause"));
+      }
+
+      if(nextMode === "longBreak"){
+        window.dispatchEvent(new CustomEvent("timerPause"));
       }
 
       function getNextSeconds(nextModeParam) {
