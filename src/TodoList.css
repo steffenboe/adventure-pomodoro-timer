@@ -1,0 +1,76 @@
+.todo-container {
+    font-family: sans-serif;
+    width: 400px; /* Adjust width as needed */
+    margin: 20px auto;
+    background-color: #7b6e6e;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .input-area {
+    display: flex;
+    margin-bottom: 10px;
+  }
+  
+  .input-area input[type="text"] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .input-area button {
+    padding: 8px 12px;
+    background-color: #89b58b; /* Green */
+    color: black;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+  }
+  
+  .todo-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .todo-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .todo-item.completed {
+    opacity: 0.6;
+  }
+  
+  .todo-item.completed span {
+    text-decoration: line-through;
+  }
+  
+  .todo-item input[type="checkbox"] {
+    margin-right: 10px;
+  }
+  
+  .todo-item span {
+    flex: 1;
+  }
+  
+  
+  .remove-button {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 10px;  /* Add some spacing */
+  }
+  
+  /* Hover effect for remove button */
+  .remove-button:hover {
+    font-weight: bold;
+  }
+  
+  

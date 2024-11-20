@@ -2,7 +2,7 @@ import { motion, useAnimationControls } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 
 function AdventureMap() {
-  const adventureDuration = 60 * 60;
+  const adventureDuration = 10;
 
   const [progress, setProgress] = useState(0);
   const progressRef = useRef(0);

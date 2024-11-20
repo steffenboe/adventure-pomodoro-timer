@@ -2,7 +2,7 @@ import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { useContext, useRef } from "react";
 import SettingsContext from "./SettingsContext";
-import useTimer from "./useTimer"; 
+import useTimer from "./useTimer";
 
 const red = "#9E8C98";
 const green = "#4aec8c";
@@ -10,20 +10,13 @@ const green = "#4aec8c";
 function Timer() {
   const settingsInfo = useContext(SettingsContext);
 
-  const { 
-    isPaused, 
-    secondsLeft, 
-    mode, 
-    start, 
-    pause,
-    sessionCount
-  } = useTimer(
+  const { isPaused, secondsLeft, mode, start, pause, sessionCount } = useTimer(
     settingsInfo.workMinutes,
     settingsInfo.breakMinutes,
     settingsInfo.longBreakMinutes
   );
 
-  const isPausedRef = useRef(isPaused);  // Create a ref for isPaused
+  const isPausedRef = useRef(isPaused); // Create a ref for isPaused
   const sessionCountRef = useRef(sessionCount);
 
   const playButton = (
@@ -59,8 +52,6 @@ function Timer() {
     </button>
   );
 
-
-
   const totalSeconds =
     mode === "longBreak"
       ? settingsInfo.longBreakMinutes * 60
@@ -72,7 +63,6 @@ function Timer() {
   const minutes = Math.floor(secondsLeft / 60);
   let seconds = secondsLeft % 60;
   if (seconds < 10) seconds = "0" + seconds;
-
 
   const renderSessionCircles = () => {
     const circles = [];
@@ -101,13 +91,10 @@ function Timer() {
         top: "50%",
         left: "50%",
         transform: "translate(-50%, -50%)",
-        margin: "0 auto",
+        margin: "20px auto",
         textAlign: "center",
       }}
     >
-       <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-        {renderSessionCircles()}
-      </div>
       <CircularProgressbar
         value={percentage}
         text={minutes + ":" + seconds}
@@ -117,6 +104,9 @@ function Timer() {
           trailColor: "rgba(255, 255, 255, 0.2)",
         })}
       />
+      <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+        {renderSessionCircles()}
+      </div>
       <div style={{ marginTop: "20px" }}>
         {isPaused ? playButton : pauseButton} {/* Use isPaused directly */}
       </div>
