@@ -24,29 +24,107 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState("");
 
-  const addTodo = () => {
+  const addTodo = async () => {
     if (newTodo.trim() !== "") {
-      setTodos([
-        ...todos,
-        { id: Date.now(), text: newTodo, completed: false, notes: "" },
-      ]);
-      setNewTodo("");
+      const newTodoItem = {
+        id: '',
+        title: newTodo,
+        completed: false,
+        notes: "",
+      };
+
+      try {
+        const response = await fetch("http://localhost:8080/todos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(newTodoItem),
+        });
+
+        if (!response.ok) {
+          // Handle errors, e.g., display an error message to the user
+          const errorData = await response.json(); // Get error details from the response
+          console.error("Failed to add todo:", errorData); // Log the error
+          alert("Failed to add todo. Please try again."); // Or show a more sophisticated error message
+        } else {
+          const data = await response.json(); // If successful, parse and use server's response (e.g., the added todo)
+          setTodos([...todos, data]); // Assumes server returns new todo. Otherwise still use client-side object: newTodoItem
+
+          setNewTodo("");
+        }
+      } catch (error) {
+        console.error("Error adding todo:", error); // Catch network errors
+        // ... other error handling as needed
+      }
     }
   };
 
-  const toggleComplete = (index) => {
+  const toggleComplete = async (index) => {
     const updatedTodos = [...todos];
     updatedTodos[index].completed = !updatedTodos[index].completed;
     setTodos(updatedTodos);
-    console.log(todos);
+    const adventureCompletedEvent = new CustomEvent("adventureCompleted", {
+      detail: { amount: 5 },
+    });
+    window.dispatchEvent(adventureCompletedEvent);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/todos/${updatedTodos[index].id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedTodos[index]),
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Failed to update todo:", response);
+        alert("Failed to update todo. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error updating todo:", error);
+    }
   };
 
-  const removeTodo = (index) => {
+  const removeTodo = async (index) => {
     const updatedTodos = todos.filter((_, i) => i !== index);
     setTodos(updatedTodos);
+    try {
+      const response = await fetch(
+        `http://localhost:8080/todos/${updatedTodos[index].id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        console.error("Failed to delete todo:", response);
+        alert("Failed to delete todo. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting todo:", error);
+    }
   };
 
   useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/todos");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setTodos(data);
+      } catch (error) {
+        console.error("Error fetching todos:", error);
+        // Handle error appropriately (e.g., display an error message)
+      }
+    };
+
+    fetchTodos();
+
     const handleAdventureComplete = (event) => {
       setPlayerGold((prevGold) => prevGold + event.detail.amount);
       setModalGoldAmount(event.detail.amount);
@@ -194,7 +272,7 @@ function App() {
               />
             }
           />
-          
+
           <Route
             path="/notes"
             element={

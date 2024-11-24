@@ -22,7 +22,7 @@ function TodoList({ todos, setTodos, addTodo, newTodo, setNewTodo, toggleComplet
               checked={todo.completed}
               onChange={() => toggleComplete(todos.findIndex(t => t.id === todo.id))} 
             />
-            <span>{todo.text}</span>
+            <span>{todo.title}</span>
             <button className="remove-button" onClick={() => removeTodo(todos.findIndex(t => t.id === todo.id))}>
               &times;
             </button>
