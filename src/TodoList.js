@@ -15,7 +15,7 @@ function TodoList({ todos, setTodos, addTodo, newTodo, setNewTodo, toggleComplet
         <button onClick={addTodo}>Add</button>
       </div>
       <ul className="todo-list">
-        {todos.map((todo) => (
+        {Array.isArray(todos) && todos.map((todo) => (
           <li key={todo.id} className={`todo-item ${todo.completed ? "completed" : ""}`}>
             <input
               type="checkbox"
