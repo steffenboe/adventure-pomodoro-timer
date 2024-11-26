@@ -27,7 +27,7 @@ function Modal({ onClose, children }) {
         padding: '10px 20px', // Adjusted padding
         borderRadius: '8px',
         textAlign: 'center',
-        zIndex: 100,
+        zIndex: 110,
         opacity: isVisible ? 1 : 0, // Fade out animation
         transition: 'opacity 0.5s ease', // Smooth transition
       }}

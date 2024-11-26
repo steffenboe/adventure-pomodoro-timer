@@ -18,8 +18,11 @@ function App() {
   const [breakMinutes, setBreakMinutes] = useState(5);
   const [longBreakMinutes, setLongBreakMinutes] = useState(15);
   const [playerGold, setPlayerGold] = useState(0);
+  const [playerExp, setPlayerExp] = useState(0);
+  const [playerLevel, setPlayerLevel] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [modalGoldAmount, setModalGoldAmount] = useState(0);
+  const [modalExpAmount, setModalExpAmount] = useState(0);
   const [selectedTodo, setSelectedTodo] = useState(null);
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState("");
@@ -83,16 +86,13 @@ function App() {
 
       if (updatedTodo.completed) {
         const adventureCompletedEvent = new CustomEvent("adventureCompleted", {
-          detail: { amount: 5 },
+          detail: { amount: 5, exp: 10 },
         });
         window.dispatchEvent(adventureCompletedEvent);
       }
-
     } catch (error) {
       console.error("Error updating todo:", error);
     }
-
-    
   };
 
   const removeTodo = async (index) => {
@@ -145,11 +145,48 @@ function App() {
     }
   };
 
+  const fetchPlayerLevel = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/player");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setPlayerLevel(data.playerLevel);
+      setPlayerExp(data.exp);
+    } catch (error) {
+      console.error("Error fetching player level: ", error);
+    }
+  };
+
   useEffect(() => {
     fetchTodos();
     fetchRewards();
+    fetchPlayerLevel();
 
     const handleAdventureComplete = async (event) => {
+      const gainedExp = event.detail.exp;
+      try {
+        const response = await fetch("http://localhost:8080/player", {
+          method: "PUT",
+          body: gainedExp,
+          headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setPlayerLevel(data.playerLevel);
+        setPlayerExp(data.exp); // Update playerExp with the server response
+
+      } catch (error) {
+        console.error("Error updating player:", error);
+        // Handle the error, perhaps by reverting the playerExp change or showing an error message
+        setPlayerExp(playerExp); // Revert to previous value if error.
+      }
+
       setPlayerGold((prevGold) => {
         const newGold = prevGold + event.detail.amount;
 
@@ -175,6 +212,7 @@ function App() {
         return newGold;
       });
       setModalGoldAmount(event.detail.amount);
+      setModalExpAmount(event.detail.exp);
       setShowModal(true);
     };
 
@@ -189,24 +227,6 @@ function App() {
     <BrowserRouter>
       <main>
         <div style={{ position: "fixed", zIndex: 100 }}>
-          <div
-            style={{
-              position: "fixed",
-              alignItems: "center",
-              display: "flex",
-              right: "20px",
-              top: "10px",
-              fontSize: "30px",
-            }}
-          >
-            <img
-              style={{ width: "60px", height: "60px" }}
-              src={coinsImage}
-              alt="Coins"
-            />
-            {playerGold}
-          </div>
-
           <div
             style={{
               position: "fixed",
@@ -230,7 +250,7 @@ function App() {
 
         {showModal && (
           <Modal onClose={() => setShowModal(false)}>
-            Congratulations! You earned {modalGoldAmount} gold!
+            + {modalGoldAmount} coins, + {modalExpAmount} exp
           </Modal>
         )}
 
@@ -341,16 +361,39 @@ function App() {
                       body: JSON.stringify(updatedTodo),
                     }
                   );
-              
+
                   if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                   }
-                  
                 }}
               />
             }
           />
         </Routes>
+        <div
+          style={{
+            position: "absolute",
+            alignItems: "center",
+            display: "flex",
+            left: "20px",
+            bottom: "10px",
+            fontSize: "15px",
+            zIndex: 100,
+          }}
+        >
+          Level: {playerLevel}
+          <progress
+            value={playerExp}
+            max={100}
+            style={{ width: "80px", height: "20px", margin: "0 20px" }}
+          />
+          <img
+            style={{ width: "60px", height: "60px" }}
+            src={coinsImage}
+            alt="Coins"
+          />
+          {playerGold}
+        </div>
       </main>
     </BrowserRouter>
   );

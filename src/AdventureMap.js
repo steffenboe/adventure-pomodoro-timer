@@ -1,5 +1,6 @@
 import { motion, useAnimationControls } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { exp } from "three/webgpu";
 
 function AdventureMap() {
   const adventureDuration = 10;
@@ -69,7 +70,7 @@ function AdventureMap() {
           if (progressRef.current >= 1) {
             const adventureCompletedEvent = new CustomEvent(
               "adventureCompleted",
-              { detail: { amount: 20 } }
+              { detail: { amount: 20, exp: 15 } }
             );
             window.dispatchEvent(adventureCompletedEvent);
           }
