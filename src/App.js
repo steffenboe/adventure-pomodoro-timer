@@ -86,7 +86,7 @@ function App() {
 
       if (updatedTodo.completed) {
         const adventureCompletedEvent = new CustomEvent("adventureCompleted", {
-          detail: { amount: 5, exp: 10 },
+          detail: { amount: Math.floor(Math.random() * 26) + 5, exp: Math.floor(Math.random() * 26) + 5 },
         });
         window.dispatchEvent(adventureCompletedEvent);
       }
