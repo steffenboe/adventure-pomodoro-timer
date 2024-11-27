@@ -20,6 +20,29 @@ function AdventureMap() {
   const animationControls = useAnimationControls();
 
   useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/progress");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        const savedProgress = data.progress || 0;
+
+        progressRef.current = savedProgress;
+        setProgress(savedProgress);
+
+        animationControls.start({
+          offsetDistance: `${savedProgress * 100}%`,
+          transition: { duration: 0 },
+        });
+      } catch (error) {
+        console.error("Error fetching progress:", error);
+      }
+    };
+
+    fetchProgress();
+
     const handleTimerStart = () => {
       remainingAnimationTime =
         totalAnimationDuration * (1 - progressRef.current);
@@ -30,8 +53,23 @@ function AdventureMap() {
       });
     };
 
-    const handleTimerPause = () => {
+    const handleTimerPause = async () => {
       animationControls.stop();
+      try {
+        const response = await fetch("http://localhost:8080/progress", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: progressRef.current,
+        });
+
+        if (!response.ok) {
+          console.error("Failed to send progress:", response.status);
+        }
+      } catch (error) {
+        console.error("Error sending progress:", error);
+      }
     };
 
     window.addEventListener("timerStart", handleTimerStart);
@@ -64,13 +102,15 @@ function AdventureMap() {
         onUpdate={(latest) => {
           const currentProgress =
             parseFloat(latest.offsetDistance.replace("%", "")) / 100;
-          progressRef.current = currentProgress; // Update ref value
+          progressRef.current = currentProgress;
           setProgress(currentProgress);
 
           if (progressRef.current >= 1) {
             const adventureCompletedEvent = new CustomEvent(
               "adventureCompleted",
-              { detail: { amount: 20, exp: 15 } }
+              {
+                detail: { amount: Math.floor(Math.random() * 26) + 5, exp: Math.floor(Math.random() * 26) + 5 },
+              }
             );
             window.dispatchEvent(adventureCompletedEvent);
           }
