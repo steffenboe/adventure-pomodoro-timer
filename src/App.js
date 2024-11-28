@@ -11,6 +11,7 @@ import TodoList from "./TodoList";
 import { Link } from "react-router-dom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TodoNotes from "./TodoNotes";
+import Marketplace from "./Marketplace";
 
 function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -46,18 +47,16 @@ function App() {
         });
 
         if (!response.ok) {
-          // Handle errors, e.g., display an error message to the user
-          const errorData = await response.json(); // Get error details from the response
-          console.error("Failed to add todo:", errorData); // Log the error
-          alert("Failed to add todo. Please try again."); // Or show a more sophisticated error message
+          const errorData = await response.json();
+          console.error("Failed to add todo:", errorData);
+          alert("Failed to add todo. Please try again.");
         } else {
-          const data = await response.json(); // If successful, parse and use server's response (e.g., the added todo)
-          setTodos([...todos, data]); // Assumes server returns new todo. Otherwise still use client-side object: newTodoItem
+          const data = await response.json();
+          setTodos([...todos, data]);
           setNewTodo("");
         }
       } catch (error) {
-        console.error("Error adding todo:", error); // Catch network errors
-        // ... other error handling as needed
+        console.error("Error adding todo:", error);
       }
     }
   };
@@ -86,7 +85,10 @@ function App() {
 
       if (updatedTodo.completed) {
         const adventureCompletedEvent = new CustomEvent("adventureCompleted", {
-          detail: { amount: Math.floor(Math.random() * 26) + 5, exp: Math.floor(Math.random() * 26) + 5 },
+          detail: {
+            amount: Math.floor(Math.random() * 26) + 5,
+            exp: Math.floor(Math.random() * 26) + 5,
+          },
         });
         window.dispatchEvent(adventureCompletedEvent);
       }
@@ -127,7 +129,6 @@ function App() {
       setPlayerGold(data.amount);
     } catch (error) {
       console.error("Error fetching rewards:", error);
-      // Handle error appropriately (e.g., display an error message)
     }
   };
 
@@ -141,7 +142,6 @@ function App() {
       setTodos(data);
     } catch (error) {
       console.error("Error fetching todos:", error);
-      // Handle error appropriately (e.g., display an error message)
     }
   };
 
@@ -180,22 +180,19 @@ function App() {
         const data = await response.json();
         setPlayerLevel(data.playerLevel);
         setPlayerExp(data.exp); // Update playerExp with the server response
-
       } catch (error) {
         console.error("Error updating player:", error);
-        // Handle the error, perhaps by reverting the playerExp change or showing an error message
-        setPlayerExp(playerExp); // Revert to previous value if error.
+        setPlayerExp(playerExp);
       }
 
       setPlayerGold((prevGold) => {
         const newGold = prevGold + event.detail.amount;
 
-        // Perform your API call HERE inside the callback
         (async () => {
           try {
             const response = await fetch("http://localhost:8080/rewards", {
               method: "PUT",
-              body: JSON.stringify({ amount: newGold }), // Use newGold in the body
+              body: JSON.stringify({ amount: newGold }),
               headers: {
                 "Content-Type": "application/json",
               },
@@ -205,9 +202,8 @@ function App() {
             }
           } catch (error) {
             console.error("Error updating rewards:", error);
-            // Handle error appropriately (e.g., display an error message)
           }
-        })(); // Immediately invoked async function
+        })();
 
         return newGold;
       });
@@ -244,6 +240,9 @@ function App() {
             </Link>
             <Link to="/notes">
               <button>Notes</button>
+            </Link>
+            <Link to="/marketplace">
+              <button>Marketplace</button>
             </Link>
           </div>
         </div>
@@ -366,6 +365,15 @@ function App() {
                     throw new Error(`HTTP error! status: ${response.status}`);
                   }
                 }}
+              />
+            }
+          />
+          <Route
+            path="/marketplace"
+            element={
+              <Marketplace
+                playerGold={playerGold}
+                updatePlayerGold={fetchRewards}
               />
             }
           />
