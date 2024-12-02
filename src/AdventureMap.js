@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { exp } from "three/webgpu";
 
 function AdventureMap({ api }) {
-  const adventureDuration = 10;
+  const adventureDuration = 100 * 60;
 
   const [progress, setProgress] = useState(0);
   const progressRef = useRef(0);
