@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Modal from "./Modal";
 import "./Marketplace.css";
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
 
-function Marketplace({ playerGold, updatePlayerGold }) {
+function Marketplace({ playerGold, updatePlayerGold, api }) {
   const [items, setItems] = useState([]);
   const [newItemName, setNewItemName] = useState("");
   const [newItemPrice, setNewItemPrice] = useState("");
@@ -18,60 +20,37 @@ function Marketplace({ playerGold, updatePlayerGold }) {
   }, []);
 
   const fetchItems = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/marketplace");
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setItems(data);
-    } catch (error) {
-      console.error("Error fetching items:", error);
-      setError("Error fetching items from the marketplace.");
-    }
+    api.get("/marketplace").then((response) => {
+      setItems(response.data);
+    });
   };
 
   const handleBuy = async (item) => {
-    try {
-      const response = await fetch(
-        `http://localhost:8080/marketplace/${item.id}/buy`,
-        { method: "POST" }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      updatePlayerGold();
-      setModalGoldAmount(item.price);
-      setShowBuyModal(true);
-      fetchItems();
-    } catch (error) {
-      console.error("Error buying item:", error);
-      setError("Error purchasing item. Please try again later.");
-    }
+    api
+      .post(`/marketplace/${item.id}/buy`)
+      .then((response) => {
+        updatePlayerGold();
+        setModalGoldAmount(item.price);
+        setShowBuyModal(true);
+        fetchItems();
+      })
+      .catch((error) => {
+        console.error("Error buying item:", error);
+        setError("Error purchasing item. Please try again later.");
+      });
   };
 
   const handleDeleteItem = async (item) => {
-    try {
-      const newItem = { name: newItemName, price: parseInt(newItemPrice) };
-      const response = await fetch(
-        `http://localhost:8080/marketplace/${item.id}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create item.");
-      }
-
-      fetchItems();
-      setShowDeleteItemModal(true);
-    } catch (error) {
-      console.error("Error creating item:", error);
-      setCreateItemError(error.message);
-    }
+    api
+      .delete(`/marketplace/${item.id}`)
+      .then((response) => {
+        fetchItems();
+        setShowDeleteItemModal(true);
+      })
+      .catch((error) => {
+        console.error("Error deleting item:", error);
+        setError("Error deleting item. Please try again later.");
+      });
   };
 
   const handleCreateItem = async () => {
@@ -82,28 +61,21 @@ function Marketplace({ playerGold, updatePlayerGold }) {
       return;
     }
 
-    try {
-      const newItem = { name: newItemName, price: parseInt(newItemPrice) };
-      const response = await fetch(`http://localhost:8080/marketplace`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newItem),
+    api
+      .post("/marketplace", {
+        name: newItemName,
+        price: parseInt(newItemPrice),
+      })
+      .then((response) => {
+        setItems([...items, response.data]);
+        setNewItemName("");
+        setNewItemPrice("");
+        setShowCreateItemModal(true);
+      })
+      .catch((error) => {
+        console.error("Error creating item:", error);
+        setCreateItemError(error.message);
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to create item.");
-      }
-
-      const createdItem = await response.json();
-      setItems([...items, createdItem]);
-      setNewItemName("");
-      setNewItemPrice("");
-      setShowCreateItemModal(true);
-    } catch (error) {
-      console.error("Error creating item:", error);
-      setCreateItemError(error.message);
-    }
   };
 
   return (

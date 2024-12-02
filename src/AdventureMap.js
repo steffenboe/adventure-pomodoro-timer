@@ -2,7 +2,7 @@ import { motion, useAnimationControls } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { exp } from "three/webgpu";
 
-function AdventureMap() {
+function AdventureMap({ api }) {
   const adventureDuration = 10;
 
   const [progress, setProgress] = useState(0);
@@ -22,19 +22,16 @@ function AdventureMap() {
   useEffect(() => {
     const fetchProgress = async () => {
       try {
-        const response = await fetch("http://localhost:8080/progress");
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        const savedProgress = data.progress || 0;
+        api.get("/progress").then((response) => {
+          const savedProgress = response.data.progress || 0;
 
-        progressRef.current = savedProgress;
-        setProgress(savedProgress);
+          progressRef.current = savedProgress;
+          setProgress(savedProgress);
 
-        animationControls.start({
-          offsetDistance: `${savedProgress * 100}%`,
-          transition: { duration: 0 },
+          animationControls.start({
+            offsetDistance: `${savedProgress * 100}%`,
+            transition: { duration: 0 },
+          });
         });
       } catch (error) {
         console.error("Error fetching progress:", error);
@@ -56,17 +53,11 @@ function AdventureMap() {
     const handleTimerPause = async () => {
       animationControls.stop();
       try {
-        const response = await fetch("http://localhost:8080/progress", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: progressRef.current,
-        });
-
-        if (!response.ok) {
-          console.error("Failed to send progress:", response.status);
-        }
+        api
+          .put("/progress", progressRef.current)
+          .catch((error) => {
+            console.error("Error sending progress:", error);
+          });
       } catch (error) {
         console.error("Error sending progress:", error);
       }
@@ -109,7 +100,10 @@ function AdventureMap() {
             const adventureCompletedEvent = new CustomEvent(
               "adventureCompleted",
               {
-                detail: { amount: Math.floor(Math.random() * 26) + 5, exp: Math.floor(Math.random() * 26) + 5 },
+                detail: {
+                  amount: Math.floor(Math.random() * 26) + 5,
+                  exp: Math.floor(Math.random() * 26) + 5,
+                },
               }
             );
             window.dispatchEvent(adventureCompletedEvent);

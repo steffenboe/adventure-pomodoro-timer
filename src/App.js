@@ -13,6 +13,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TodoNotes from "./TodoNotes";
 import Marketplace from "./Marketplace";
 
+import createApi from "./RequestInterceptor";
+
+import { initializeApp } from "firebase/app";
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  getAuth,
+} from "firebase/auth";
+
 function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [workMinutes, setWorkMinutes] = useState(25);
@@ -26,137 +36,73 @@ function App() {
   const [modalExpAmount, setModalExpAmount] = useState(0);
   const [selectedTodo, setSelectedTodo] = useState(null);
   const [todos, setTodos] = useState([]);
-  const [newTodo, setNewTodo] = useState("");
 
-  const addTodo = async () => {
-    if (newTodo.trim() !== "") {
-      const newTodoItem = {
-        id: "",
-        title: newTodo,
-        completed: false,
-        notes: "",
-      };
+  const [user, setUser] = useState(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-      try {
-        const response = await fetch("http://localhost:8080/todos", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(newTodoItem),
-        });
+  const firebaseConfig = {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID,
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+  };
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Failed to add todo:", errorData);
-          alert("Failed to add todo. Please try again.");
-        } else {
-          const data = await response.json();
-          setTodos([...todos, data]);
-          setNewTodo("");
-        }
-      } catch (error) {
-        console.error("Error adding todo:", error);
-      }
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  let api = createApi(auth);
+
+  const signIn = async (email, password) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      window.alert(error.message);
     }
   };
 
-  const toggleComplete = async (index) => {
+  const handleLogout = async () => {
     try {
-      const updatedTodo = {
-        ...todos[index],
-        completed: !todos[index].completed,
-      };
-
-      const response = await fetch(
-        `http://localhost:8080/todos/${updatedTodo.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(updatedTodo),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      setTodos(todos.map((todo, i) => (i === index ? updatedTodo : todo))); // Update the state correctl
-
-      if (updatedTodo.completed) {
-        const adventureCompletedEvent = new CustomEvent("adventureCompleted", {
-          detail: {
-            amount: Math.floor(Math.random() * 26) + 5,
-            exp: Math.floor(Math.random() * 26) + 5,
-          },
-        });
-        window.dispatchEvent(adventureCompletedEvent);
-      }
+      await signOut(auth);
     } catch (error) {
-      console.error("Error updating todo:", error);
-    }
-  };
-
-  const removeTodo = async (index) => {
-    const updatedTodos = todos.filter((_, i) => i !== index);
-    try {
-      const response = await fetch(
-        `http://localhost:8080/todos/${todos[index].id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      if (!response.ok) {
-        console.error("Failed to delete todo:", response);
-        alert("Failed to delete todo. Please try again.");
-      }
-      setTodos(updatedTodos);
-    } catch (error) {
-      console.error("Error deleting todo:", error);
+      window.alert("Error signing out:", error);
     }
   };
 
   const fetchRewards = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/rewards");
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setPlayerGold(data.amount);
-    } catch (error) {
-      console.error("Error fetching rewards:", error);
-    }
+    api
+      .get("/rewards")
+      .then((response) => {
+        setPlayerGold(response.data.amount);
+      })
+      .catch((error) => {
+        console.error("Error fetching rewards:", error);
+      });
   };
 
   const fetchTodos = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/todos");
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setTodos(data);
-    } catch (error) {
-      console.error("Error fetching todos:", error);
-    }
+    api
+      .get("/todos")
+      .then((response) => {
+        setTodos(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching todos:", error);
+      });
   };
 
   const fetchPlayerLevel = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/player");
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setPlayerLevel(data.playerLevel);
-      setPlayerExp(data.exp);
-    } catch (error) {
-      console.error("Error fetching player level: ", error);
-    }
+    api
+      .get("/player")
+      .then((response) => {
+        setPlayerLevel(response.data.playerLevel);
+        setPlayerExp(response.data.exp);
+      })
+      .catch((error) => {
+        console.error("Error fetching player level: ", error);
+      });
   };
 
   useEffect(() => {
@@ -166,43 +112,23 @@ function App() {
 
     const handleAdventureComplete = async (event) => {
       const gainedExp = event.detail.exp;
-      try {
-        const response = await fetch("http://localhost:8080/player", {
-          method: "PUT",
-          body: gainedExp,
-          headers: { "Content-Type": "application/json" },
+      await api
+        .put("/player", gainedExp)
+        .then((response) => {
+          setPlayerLevel(response.data.playerLevel);
+          setPlayerExp(response.data.exp);
+        })
+        .catch((error) => {
+          console.error("Error updating player: ", error);
         });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setPlayerLevel(data.playerLevel);
-        setPlayerExp(data.exp); // Update playerExp with the server response
-      } catch (error) {
-        console.error("Error updating player:", error);
-        setPlayerExp(playerExp);
-      }
 
       setPlayerGold((prevGold) => {
         const newGold = prevGold + event.detail.amount;
 
         (async () => {
-          try {
-            const response = await fetch("http://localhost:8080/rewards", {
-              method: "PUT",
-              body: JSON.stringify({ amount: newGold }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-          } catch (error) {
+          api.put("/rewards", { amount: newGold }).catch((error) => {
             console.error("Error updating rewards:", error);
-          }
+          });
         })();
 
         return newGold;
@@ -214,14 +140,33 @@ function App() {
 
     window.addEventListener("adventureCompleted", handleAdventureComplete);
 
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in, see docs for a list of available properties
+        // https://firebase.google.com/docs/reference/js/firebase.User
+        setUser(user);
+        api = createApi(auth);
+        fetchRewards();
+        fetchTodos();
+        fetchPlayerLevel();
+      } else {
+        // User is signed out
+        setUser(null);
+      }
+    });
+
     return () => {
+      unsubscribe();
       window.removeEventListener("adventureCompleted", handleAdventureComplete);
     };
   }, []);
 
-  return (
+  return user ? (
     <BrowserRouter>
       <main>
+        <div style={{ position: "fixed", top: 25, right: 10, zIndex: 100 }}>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
         <div style={{ position: "fixed", zIndex: 100 }}>
           <div
             style={{
@@ -235,13 +180,13 @@ function App() {
             <Link to="/">
               <button>Timer</button>
             </Link>
-            <Link to="/todo">
+            <Link to="/tasks">
               <button>Todo List</button>
             </Link>
             <Link to="/notes">
               <button>Notes</button>
             </Link>
-            <Link to="/marketplace">
+            <Link to="/market">
               <button>Marketplace</button>
             </Link>
           </div>
@@ -319,61 +264,22 @@ function App() {
                           ))}
                     </select>
                   </div>
-                  <AdventureMap />
+                  <AdventureMap api={api} />
                   {showSettings ? <Settings /> : <Timer />}
                 </SettingsContext.Provider>
               </div>
             }
           />
-          <Route
-            path="/todo"
-            element={
-              <TodoList
-                todos={todos}
-                setTodos={setTodos}
-                addTodo={addTodo}
-                toggleComplete={toggleComplete}
-                removeTodo={removeTodo}
-                newTodo={newTodo}
-                setNewTodo={setNewTodo}
-              />
-            }
-          />
+          <Route path="/tasks" element={<TodoList api={api} />} />
 
+          <Route path="/notes" element={<TodoNotes api={api} />} />
           <Route
-            path="/notes"
-            element={
-              <TodoNotes
-                todos={todos} // Pass the todos array
-                updateTodo={async (updatedTodo) => {
-                  // This part is crucial: find and update the todo within your state
-                  setTodos(
-                    todos.map((t) =>
-                      t.id === updatedTodo.id ? updatedTodo : t
-                    )
-                  );
-                  const response = await fetch(
-                    `http://localhost:8080/todos/${updatedTodo.id}`,
-                    {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(updatedTodo),
-                    }
-                  );
-
-                  if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                  }
-                }}
-              />
-            }
-          />
-          <Route
-            path="/marketplace"
+            path="/market"
             element={
               <Marketplace
                 playerGold={playerGold}
                 updatePlayerGold={fetchRewards}
+                api={api}
               />
             }
           />
@@ -404,6 +310,28 @@ function App() {
         </div>
       </main>
     </BrowserRouter>
+  ) : (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+      }}
+    >
+      <input
+        type="email"
+        placeholder="Email"
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <input
+        type="password"
+        placeholder="Password"
+        onChange={(e) => setPassword(e.target.value)}
+      />
+      <button onClick={() => signIn(email, password)}>Login</button>
+    </div>
   );
 }
 

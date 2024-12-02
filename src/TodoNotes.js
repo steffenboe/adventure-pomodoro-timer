@@ -1,10 +1,32 @@
 import { useState, useEffect } from "react";
 
-function TodoNotes({ todos, updateTodo }) {
+function TodoNotes({ api }) {
   const [selectedTodo, setSelectedTodo] = useState(null);
   const [notes, setNotes] = useState("");
+  const [todos, setTodos] = useState([]);
+
+  const updateTodo = async (updatedTodo) => {
+    setTodos(
+      todos.map((t) =>
+        t.id === updatedTodo.id ? updatedTodo : t
+      )
+    );
+    api.put(`/todos/${updatedTodo.id}`, updatedTodo);
+  };
+
+  const fetchTodos = async () => {
+    api
+      .get("/todos")
+      .then((response) => {
+        setTodos(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching todos:", error);
+      });
+  };
 
   useEffect(() => {
+    fetchTodos()
     if (selectedTodo) {
       setNotes(selectedTodo.notes || "");
     } else {
