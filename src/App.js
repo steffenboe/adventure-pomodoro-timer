@@ -12,7 +12,7 @@ import { Link } from "react-router-dom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import TodoNotes from "./TodoNotes";
 import Marketplace from "./Marketplace";
-
+import CharacterView from "./CharacterView";
 import createApi from "./RequestInterceptor";
 
 import { initializeApp } from "firebase/app";
@@ -189,6 +189,9 @@ function App() {
             <Link to="/market">
               <button>Marketplace</button>
             </Link>
+            <Link to="/character">
+              <button>Character</button>
+            </Link>
           </div>
         </div>
 
@@ -283,6 +286,7 @@ function App() {
               />
             }
           />
+          <Route path="/character" element={<CharacterView api={api} />} />
         </Routes>
         <div
           style={{

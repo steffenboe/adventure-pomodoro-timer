@@ -1,0 +1,33 @@
+.character-view {
+    display: flex;
+    flex-direction: column; /* Or row, adjust as needed */
+    align-items: center; /* Center horizontally */
+    /* Add more styling as needed */
+  }
+  
+  .character-image-container {
+    /* Style the image container if necessary */
+    margin-top: 100px;
+    margin-bottom: 30px /* Space between image and slots */
+  }
+  
+  .character-image {
+    width: 150px;  /* Adjust size as needed */
+    height: 200px; /* Adjust size as needed */
+  }
+  
+  .equipment-slots {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Adjust number of columns */
+    gap: 20px;  /* Spacing between slots */
+    /* Other grid properties as needed */
+  }
+  
+  .equipment-slot {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+  }
+  
+  
+  
